@@ -104,106 +104,171 @@ export default function OverviewPage() {
             animate="show"
             className="space-y-8"
         >
+            {/* Header Section */}
             <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
                     <p className="text-muted-foreground">
                         Real-time overview of your inventory health.
                     </p>
                 </div>
-                <div className="flex items-center space-x-2">
-                    <Button onClick={fetchStats} variant="outline" size="sm">
-                        <RefreshCw className="mr-2 h-4 w-4" />
+                <div className="flex items-center gap-3">
+                    <Button onClick={fetchStats} variant="outline" size="sm" className="gap-2">
+                        <RefreshCw className="h-4 w-4" />
                         Refresh
                     </Button>
-                    <Link href="/products/add">
-                        <Button size="sm">
-                            <Package className="mr-2 h-4 w-4" />
+                    <Link href="/products/edit">
+                        <Button size="sm" className="gap-2 shadow-lg shadow-primary/20">
+                            <Package className="h-4 w-4" />
                             Add Product
                         </Button>
                     </Link>
                 </div>
             </div>
 
-            {/* Hero Stats Cards */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {/* KPI Cards Section */}
+            <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <motion.div variants={item}>
-                    <MetricCard
-                        title="Total Revenue"
-                        value={`$${stats?.totalInventoryValue.toLocaleString()}`}
-                        icon={DollarSign}
-                        trend={{ value: "+12% from last month", isPositive: true }}
-                        className="bg-primary/5 border-primary/20"
-                    />
+                    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <CardHeader className="pb-2">
+                            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Revenue</p>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            <p className="text-4xl font-bold tracking-tight">${stats?.totalInventoryValue.toLocaleString()}</p>
+                            <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-medium text-emerald-600">
+                                    <TrendingUp className="h-3 w-3" />
+                                    +12%
+                                </span>
+                                <span className="text-xs text-muted-foreground">from last month</span>
+                            </div>
+                        </CardContent>
+                        <div className="absolute right-4 top-4">
+                            <div className="rounded-full bg-emerald-500/10 p-2">
+                                <DollarSign className="h-5 w-5 text-emerald-600" />
+                            </div>
+                        </div>
+                    </Card>
                 </motion.div>
-                <motion.div variants={item}>
-                    <MetricCard
-                        title="Total Products"
-                        value={stats?.totalProducts.toString() || "0"}
-                        icon={Package}
-                        trend={{ value: "+5 new this week", isPositive: true }}
-                    />
-                </motion.div>
-                <motion.div variants={item}>
-                    <MetricCard
-                        title="Low Stock Alerts"
-                        value={stats?.lowStock.toString() || "0"}
-                        icon={AlertTriangle}
-                        trend={{ value: "Requires attention", isPositive: false }}
-                        iconClassName="text-warning"
-                    />
-                </motion.div>
-                <motion.div variants={item}>
-                    <MetricCard
-                        title="Categories"
-                        value={stats?.totalCategories.toString() || "0"}
-                        icon={FolderOpen}
-                        trend={{ value: "Active categories", isPositive: true }}
-                    />
-                </motion.div>
-            </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
-                {/* Charts Section */}
-                <motion.div variants={item} className="col-span-4">
-                    <Card className="h-full">
+                <motion.div variants={item}>
+                    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <CardHeader className="pb-2">
+                            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Products</p>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            <p className="text-4xl font-bold tracking-tight">{stats?.totalProducts || 0}</p>
+                            <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-600">
+                                    <TrendingUp className="h-3 w-3" />
+                                    +5
+                                </span>
+                                <span className="text-xs text-muted-foreground">new this week</span>
+                            </div>
+                        </CardContent>
+                        <div className="absolute right-4 top-4">
+                            <div className="rounded-full bg-blue-500/10 p-2">
+                                <Package className="h-5 w-5 text-blue-600" />
+                            </div>
+                        </div>
+                    </Card>
+                </motion.div>
+
+                <motion.div variants={item}>
+                    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <CardHeader className="pb-2">
+                            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Low Stock Alerts</p>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            <p className="text-4xl font-bold tracking-tight">{stats?.lowStock || 0}</p>
+                            <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-600">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    Attention
+                                </span>
+                                <span className="text-xs text-muted-foreground">requires review</span>
+                            </div>
+                        </CardContent>
+                        <div className="absolute right-4 top-4">
+                            <div className="rounded-full bg-amber-500/10 p-2">
+                                <AlertTriangle className="h-5 w-5 text-amber-600" />
+                            </div>
+                        </div>
+                    </Card>
+                </motion.div>
+
+                <motion.div variants={item}>
+                    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-violet-500/10 via-violet-500/5 to-transparent shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <CardHeader className="pb-2">
+                            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Categories</p>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            <p className="text-4xl font-bold tracking-tight">{stats?.totalCategories || 0}</p>
+                            <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-violet-500/20 px-2 py-0.5 text-xs font-medium text-violet-600">
+                                    <CheckCircle className="h-3 w-3" />
+                                    Active
+                                </span>
+                                <span className="text-xs text-muted-foreground">product categories</span>
+                            </div>
+                        </CardContent>
+                        <div className="absolute right-4 top-4">
+                            <div className="rounded-full bg-violet-500/10 p-2">
+                                <FolderOpen className="h-5 w-5 text-violet-600" />
+                            </div>
+                        </div>
+                    </Card>
+                </motion.div>
+            </section>
+
+            {/* Charts Section */}
+            <section className="grid grid-cols-1 gap-6 lg:grid-cols-7">
+                <motion.div variants={item} className="lg:col-span-4">
+                    <Card className="h-full border-0 shadow-sm">
                         <CardHeader>
-                            <CardTitle>Top Categories</CardTitle>
+                            <CardTitle className="text-lg font-semibold">Top Categories</CardTitle>
                             <CardDescription>
                                 Distribution of products across your top 5 categories.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="pl-2">
-                            <div className="h-[300px] w-full">
+                            <div className="h-[350px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={stats?.topCategories}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <BarChart data={stats?.topCategories} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                                        <defs>
+                                            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={1} />
+                                                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                                         <XAxis
                                             dataKey="name"
-                                            stroke="#888888"
+                                            stroke="hsl(var(--muted-foreground))"
                                             fontSize={12}
                                             tickLine={false}
                                             axisLine={false}
                                         />
                                         <YAxis
-                                            stroke="#888888"
+                                            stroke="hsl(var(--muted-foreground))"
                                             fontSize={12}
                                             tickLine={false}
                                             axisLine={false}
                                             tickFormatter={(value) => `${value}`}
                                         />
                                         <Tooltip
-                                            cursor={{ fill: "transparent" }}
+                                            cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
                                             contentStyle={{
                                                 backgroundColor: "hsl(var(--card))",
                                                 borderColor: "hsl(var(--border))",
                                                 borderRadius: "var(--radius)",
+                                                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                                             }}
                                         />
                                         <Bar
                                             dataKey="value"
-                                            fill="hsl(var(--primary))"
-                                            radius={[4, 4, 0, 0]}
+                                            fill="url(#barGradient)"
+                                            radius={[6, 6, 0, 0]}
                                         />
                                     </BarChart>
                                 </ResponsiveContainer>
@@ -212,88 +277,114 @@ export default function OverviewPage() {
                     </Card>
                 </motion.div>
 
-                {/* Inventory Status & Recent Activity */}
-                <div className="col-span-3 space-y-4">
-                    <motion.div variants={item}>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Inventory Status</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="h-[200px] w-full">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie
-                                                data={inventoryStatusData}
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius={60}
-                                                outerRadius={80}
-                                                paddingAngle={5}
-                                                dataKey="value"
-                                            >
-                                                {inventoryStatusData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip />
-                                        </PieChart>
-                                    </ResponsiveContainer>
+                <motion.div variants={item} className="lg:col-span-3">
+                    <Card className="h-full border-0 shadow-sm">
+                        <CardHeader>
+                            <CardTitle className="text-lg font-semibold">Inventory Status</CardTitle>
+                            <CardDescription>Stock distribution overview</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="relative h-[220px] w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={inventoryStatusData}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={65}
+                                            outerRadius={90}
+                                            paddingAngle={4}
+                                            dataKey="value"
+                                            strokeWidth={0}
+                                        >
+                                            {inventoryStatusData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: "hsl(var(--card))",
+                                                borderColor: "hsl(var(--border))",
+                                                borderRadius: "var(--radius)",
+                                            }}
+                                        />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                                {/* Center Label */}
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <div className="text-center">
+                                        <p className="text-3xl font-bold">{stats?.totalProducts || 0}</p>
+                                        <p className="text-xs text-muted-foreground">Total</p>
+                                    </div>
                                 </div>
-                                <div className="flex justify-center gap-4 text-sm">
-                                    {inventoryStatusData.map((item) => (
-                                        <div key={item.name} className="flex items-center gap-2">
-                                            <div
-                                                className="h-3 w-3 rounded-full"
-                                                style={{ backgroundColor: item.color }}
-                                            />
-                                            <span className="text-muted-foreground">{item.name}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
+                            </div>
+                            <div className="flex justify-center gap-6 mt-4">
+                                {inventoryStatusData.map((item) => (
+                                    <div key={item.name} className="flex items-center gap-2">
+                                        <div
+                                            className="h-3 w-3 rounded-full"
+                                            style={{ backgroundColor: item.color }}
+                                        />
+                                        <span className="text-sm text-muted-foreground">{item.name}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+            </section>
 
-                    <motion.div variants={item}>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Recent Activity</CardTitle>
+            {/* Recent Activity Section */}
+            <section>
+                <motion.div variants={item}>
+                    <Card className="border-0 shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
                                 <CardDescription>
                                     Latest products added to the catalog.
                                 </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4">
-                                    {stats?.recentProducts.map((product) => (
-                                        <div
-                                            key={product.id}
-                                            className="flex items-center justify-between"
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
-                                                    <Package className="h-5 w-5 text-primary" />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-sm font-medium leading-none">
-                                                        {product.name}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {product.category?.name}
-                                                    </p>
-                                                </div>
+                            </div>
+                            <Link href="/products">
+                                <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground hover:text-foreground">
+                                    View All
+                                    <ArrowRight className="h-4 w-4" />
+                                </Button>
+                            </Link>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-1">
+                                {stats?.recentProducts.map((product, index) => (
+                                    <div
+                                        key={product.id}
+                                        className={cn(
+                                            "flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer",
+                                            index !== (stats?.recentProducts.length || 0) - 1 && "border-b border-border/50"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 shrink-0">
+                                                <Package className="h-5 w-5 text-primary" />
                                             </div>
-                                            <div className="text-sm font-medium">
-                                                ${product.price}
+                                            <div className="space-y-0.5">
+                                                <p className="text-sm font-medium leading-none">
+                                                    {product.name}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {product.category?.name} • Added recently
+                                                </p>
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                </div>
-            </div>
+                                        <div className="text-sm font-semibold">
+                                            ${product.price.toFixed(2)}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+            </section>
         </motion.div>
     );
 }
