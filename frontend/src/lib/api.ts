@@ -175,3 +175,19 @@ export async function uploadImage(file: File): Promise<{ imageUrl: string }> {
     if (!res.ok) throw new Error("Failed to upload image");
     return res.json();
 }
+
+// Export Products
+export async function exportProducts(): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/products/export`);
+    if (!res.ok) throw new Error("Failed to export products");
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "products_export.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}

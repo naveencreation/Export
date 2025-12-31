@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { getProducts, getCategories, deleteProduct, bulkDeleteProducts, BACKEND_URL, type Product, type Category } from "@/lib/api";
+import { getProducts, getCategories, deleteProduct, bulkDeleteProducts, exportProducts, BACKEND_URL, type Product, type Category } from "@/lib/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,6 +78,7 @@ export default function ProductsPage() {
     const [totalItems, setTotalItems] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+    const [exporting, setExporting] = useState(false);
 
     // Debounced search
     const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -329,9 +330,32 @@ export default function ProductsPage() {
                                 </Button>
                             </div>
 
-                            <Button variant="outline" className="gap-2 bg-background/50 border-border/50 hover:bg-accent/50" aria-label="Export products to CSV">
+                            <Button
+                                variant="outline"
+                                className="gap-2 bg-background/50 border-border/50 hover:bg-accent/50"
+                                aria-label="Export products to CSV"
+                                disabled={exporting}
+                                onClick={async () => {
+                                    setExporting(true);
+                                    try {
+                                        await exportProducts();
+                                        toast({
+                                            title: "Export Successful",
+                                            description: "Products exported to CSV.",
+                                        });
+                                    } catch (err) {
+                                        toast({
+                                            title: "Export Failed",
+                                            description: "Could not export products.",
+                                            variant: "destructive",
+                                        });
+                                    } finally {
+                                        setExporting(false);
+                                    }
+                                }}
+                            >
                                 <Download className="h-4 w-4" aria-hidden="true" />
-                                Export
+                                {exporting ? "Exporting..." : "Export"}
                             </Button>
 
                             <Button onClick={() => router.push("/products/edit")} className="gap-2 shadow-lg shadow-primary/20">

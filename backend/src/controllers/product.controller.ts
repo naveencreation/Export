@@ -112,3 +112,65 @@ export const bulkDeleteProducts = async (
         next(error);
     }
 };
+
+export const exportProducts = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const products = await productService.getProductsForExport();
+
+        // CSV Headers
+        const headers = [
+            'ID',
+            'Name',
+            'SKU',
+            'Description',
+            'Price',
+            'Quantity',
+            'Status',
+            'Stock Status',
+            'Category',
+            'HS Code',
+            'Origin Country',
+            'Weight',
+            'Length',
+            'Width',
+            'Height',
+            'Material',
+            'Created At',
+            'Updated At'
+        ];
+
+        // CSV Rows
+        const rows = products.map(p => [
+            p.id,
+            `"${(p.name || '').replace(/"/g, '""')}"`,
+            `"${(p.sku || '').replace(/"/g, '""')}"`,
+            `"${(p.description || '').replace(/"/g, '""')}"`,
+            p.price,
+            p.quantity,
+            p.status || 'DRAFT',
+            p.stockStatus || '',
+            `"${(p.category?.name || '').replace(/"/g, '""')}"`,
+            `"${(p.hsCode || '').replace(/"/g, '""')}"`,
+            `"${(p.originCountry || '').replace(/"/g, '""')}"`,
+            p.weight || '',
+            p.length || '',
+            p.width || '',
+            p.height || '',
+            `"${(p.material || '').replace(/"/g, '""')}"`,
+            p.createdAt.toISOString(),
+            p.updatedAt.toISOString()
+        ].join(','));
+
+        const csv = [headers.join(','), ...rows].join('\n');
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="products_export.csv"');
+        res.send(csv);
+    } catch (error) {
+        next(error);
+    }
+};

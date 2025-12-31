@@ -572,7 +572,7 @@ function ProductEditContent() {
                                         <FormItem>
                                             <FormLabel>Weight (kg)</FormLabel>
                                             <FormControl>
-                                                <Input type="number" step="0.1" {...field} />
+                                                <Input type="number" step="0.1" {...field} value={field.value ?? ""} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -586,7 +586,7 @@ function ProductEditContent() {
                                             <FormItem>
                                                 <FormLabel>Length (cm)</FormLabel>
                                                 <FormControl>
-                                                    <Input type="number" step="0.1" {...field} />
+                                                    <Input type="number" step="0.1" {...field} value={field.value ?? ""} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -599,7 +599,7 @@ function ProductEditContent() {
                                             <FormItem>
                                                 <FormLabel>Width (cm)</FormLabel>
                                                 <FormControl>
-                                                    <Input type="number" step="0.1" {...field} />
+                                                    <Input type="number" step="0.1" {...field} value={field.value ?? ""} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -612,7 +612,7 @@ function ProductEditContent() {
                                             <FormItem>
                                                 <FormLabel>Height (cm)</FormLabel>
                                                 <FormControl>
-                                                    <Input type="number" step="0.1" {...field} />
+                                                    <Input type="number" step="0.1" {...field} value={field.value ?? ""} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
