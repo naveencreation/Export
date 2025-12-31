@@ -10,6 +10,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MetricCard } from "@/components/ui/metric-card";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { motion } from "framer-motion";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -58,33 +61,7 @@ function getImageUrl(url: string | null) {
     return `${BACKEND_URL}${url}`;
 }
 
-// Stock status calculation based on quantity
-const getStockStatusStyles = (stockStatus: string) => {
-    switch (stockStatus) {
-        case "In Stock":
-            return "border-green-500/20 bg-green-500/10 text-green-700 dark:bg-green-500/20 dark:text-green-400";
-        case "Low Stock":
-            return "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400";
-        case "Out of Stock":
-            return "border-red-500/20 bg-red-500/10 text-red-700 dark:bg-red-500/20 dark:text-red-400";
-        default:
-            return "border-slate-200 bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-400";
-    }
-};
 
-// Lifecycle status styling (DRAFT/ACTIVE/ARCHIVED)
-const getStatusStyles = (status: string) => {
-    switch (status) {
-        case "ACTIVE":
-            return "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400";
-        case "DRAFT":
-            return "border-purple-500/20 bg-purple-500/10 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400";
-        case "ARCHIVED":
-            return "border-gray-500/20 bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-400";
-        default:
-            return "border-slate-200 bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-400";
-    }
-};
 
 export default function ProductsPage() {
     const router = useRouter();
@@ -246,97 +223,53 @@ export default function ProductsPage() {
         <div className="space-y-8">
             {/* Metrics Deck */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-100 dark:border-blue-900">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                            Total Products
-                        </h3>
-                        <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" aria-hidden="true" />
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? (
-                            <Skeleton className="h-8 w-16" />
-                        ) : (
-                            <>
-                                <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                                    {metrics.totalProducts}
-                                </div>
-                                <p className="text-xs text-blue-600/80 dark:text-blue-300/80 mt-1">
-                                    Active inventory items
-                                </p>
-                            </>
-                        )}
-                    </CardContent>
-                </Card>
+                <MetricCard
+                    title="Total Products"
+                    value={loading ? "..." : metrics.totalProducts}
+                    icon={Package}
+                    description="Active inventory items"
+                    className="bg-primary/5 border-primary/20"
+                    titleClassName="text-primary"
+                    iconClassName="text-primary"
+                    valueClassName="text-primary"
+                    descriptionClassName="text-primary/80"
+                />
 
-                <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 border-emerald-100 dark:border-emerald-900">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <h3 className="text-sm font-medium text-emerald-900 dark:text-emerald-100">
-                            Inventory Value
-                        </h3>
-                        <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? (
-                            <Skeleton className="h-8 w-24" />
-                        ) : (
-                            <>
-                                <div className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
-                                    ${metrics.totalValue.toLocaleString()}
-                                </div>
-                                <p className="text-xs text-emerald-600/80 dark:text-emerald-300/80 mt-1">
-                                    Total asset value
-                                </p>
-                            </>
-                        )}
-                    </CardContent>
-                </Card>
+                <MetricCard
+                    title="Inventory Value"
+                    value={loading ? "..." : `$${metrics.totalValue.toLocaleString()}`}
+                    icon={DollarSign}
+                    description="Total asset value"
+                    className="bg-success/5 border-success/20"
+                    titleClassName="text-success"
+                    iconClassName="text-success"
+                    valueClassName="text-success"
+                    descriptionClassName="text-success/80"
+                />
 
-                <Card className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-100 dark:border-amber-900">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <h3 className="text-sm font-medium text-amber-900 dark:text-amber-100">
-                            Low Stock Alerts
-                        </h3>
-                        <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? (
-                            <Skeleton className="h-8 w-12" />
-                        ) : (
-                            <>
-                                <div className="text-2xl font-bold text-amber-900 dark:text-amber-100">
-                                    {metrics.lowStock}
-                                </div>
-                                <p className="text-xs text-amber-600/80 dark:text-amber-300/80 mt-1">
-                                    Items below 10 units
-                                </p>
-                            </>
-                        )}
-                    </CardContent>
-                </Card>
+                <MetricCard
+                    title="Low Stock Alerts"
+                    value={loading ? "..." : metrics.lowStock}
+                    icon={AlertTriangle}
+                    description="Items below 10 units"
+                    className="bg-warning/5 border-warning/20"
+                    titleClassName="text-warning"
+                    iconClassName="text-warning"
+                    valueClassName="text-warning"
+                    descriptionClassName="text-warning/80"
+                />
 
-                <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-100 dark:border-purple-900">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <h3 className="text-sm font-medium text-purple-900 dark:text-purple-100">
-                            Top Category
-                        </h3>
-                        <TrendingUp className="h-4 w-4 text-purple-600 dark:text-purple-400" aria-hidden="true" />
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? (
-                            <Skeleton className="h-8 w-32" />
-                        ) : (
-                            <>
-                                <div className="text-2xl font-bold text-purple-900 dark:text-purple-100 truncate">
-                                    {metrics.topCategory}
-                                </div>
-                                <p className="text-xs text-purple-600/80 dark:text-purple-300/80 mt-1">
-                                    Highest volume category
-                                </p>
-                            </>
-                        )}
-                    </CardContent>
-                </Card>
+                <MetricCard
+                    title="Top Category"
+                    value={loading ? "..." : metrics.topCategory}
+                    icon={TrendingUp}
+                    description="Highest volume category"
+                    className="bg-accent/10 border-accent/20"
+                    titleClassName="text-accent-foreground"
+                    iconClassName="text-accent-foreground"
+                    valueClassName="text-accent-foreground truncate"
+                    descriptionClassName="text-accent-foreground/80"
+                />
             </div>
 
             {/* Main Content Card */}
@@ -460,16 +393,19 @@ export default function ProductsPage() {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                products.map((product) => {
+                                products.map((product, index) => {
                                     const status = product.status || "DRAFT";
                                     const stockStatus = product.stockStatus || "Out of Stock";
                                     const isSelected = selectedProductIds.has(product.id);
                                     return (
-                                        <TableRow
+                                        <motion.tr
                                             key={product.id}
+                                            initial={{ opacity: 0, y: 6 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.2, delay: index * 0.04 }}
                                             className={cn(
-                                                "group transition-colors border-border/40",
-                                                isSelected ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/30"
+                                                "border-b transition-colors data-[state=selected]:bg-muted group border-border/40",
+                                                isSelected ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/50"
                                             )}
                                             data-state={isSelected ? "selected" : undefined}
                                         >
@@ -505,23 +441,10 @@ export default function ProductsPage() {
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge
-                                                    variant="outline"
-                                                    className={cn("rounded-full px-3 py-0.5 font-medium border-0", getStatusStyles(status))}
-                                                    aria-label={`Product status: ${status}`}
-                                                >
-                                                    {status}
-                                                </Badge>
+                                                <StatusBadge status={status} type="lifecycle" />
                                             </TableCell>
                                             <TableCell>
-                                                <Badge
-                                                    variant="outline"
-                                                    className={cn("rounded-full px-3 py-0.5 font-medium border-0", getStockStatusStyles(stockStatus))}
-                                                    aria-label={`Stock status: ${stockStatus}`}
-                                                >
-                                                    <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-current opacity-60" aria-hidden="true" />
-                                                    {stockStatus}
-                                                </Badge>
+                                                <StatusBadge status={stockStatus} type="stock" />
                                             </TableCell>
                                             <TableCell className="text-right font-semibold text-foreground">
                                                 ${product.price.toFixed(2)}
@@ -570,7 +493,7 @@ export default function ProductsPage() {
                                                     </DropdownMenu>
                                                 </div>
                                             </TableCell>
-                                        </TableRow>
+                                        </motion.tr>
                                     );
                                 })
                             )}
@@ -608,40 +531,42 @@ export default function ProductsPage() {
                         </Button>
                     </div>
                 </div>
-            </Card>
+            </Card >
 
             {/* Floating Action Bar */}
-            {selectedProductIds.size > 0 && (
-                <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 fade-in duration-300">
-                    <div className="bg-foreground text-background rounded-full shadow-xl px-6 py-3 flex items-center gap-6 border border-border/20">
-                        <span className="font-medium text-sm">
-                            {selectedProductIds.size} selected
-                        </span>
-                        <div className="h-4 w-px bg-background/20" />
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setSelectedProductIds(new Set())}
-                                className="h-8 hover:bg-background/20 hover:text-background text-background/80"
-                                aria-label="Cancel selection"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => setBulkDeleteDialogOpen(true)}
-                                className="h-8 rounded-full px-4 shadow-sm"
-                                aria-label={`Delete ${selectedProductIds.size} selected products`}
-                            >
-                                <Trash2 className="mr-2 h-3.5 w-3.5" />
-                                Delete
-                            </Button>
+            {
+                selectedProductIds.size > 0 && (
+                    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 fade-in duration-300">
+                        <div className="bg-foreground text-background rounded-full shadow-xl px-6 py-3 flex items-center gap-6 border border-border/20">
+                            <span className="font-medium text-sm">
+                                {selectedProductIds.size} selected
+                            </span>
+                            <div className="h-4 w-px bg-background/20" />
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setSelectedProductIds(new Set())}
+                                    className="h-8 hover:bg-background/20 hover:text-background text-background/80"
+                                    aria-label="Cancel selection"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => setBulkDeleteDialogOpen(true)}
+                                    className="h-8 rounded-full px-4 shadow-sm"
+                                    aria-label={`Delete ${selectedProductIds.size} selected products`}
+                                >
+                                    <Trash2 className="mr-2 h-3.5 w-3.5" />
+                                    Delete
+                                </Button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Single Delete Dialog */}
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -679,6 +604,6 @@ export default function ProductsPage() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        </div >
     );
 }

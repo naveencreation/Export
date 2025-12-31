@@ -28,7 +28,7 @@ export default function RootLayout({
                     <Sidebar />
                     <Topbar />
                     <main className="ml-64 pt-16">
-                        <div className="p-6">{children}</div>
+                        <div className="p-6 max-w-7xl mx-auto">{children}</div>
                     </main>
                 </div>
                 <Toaster />

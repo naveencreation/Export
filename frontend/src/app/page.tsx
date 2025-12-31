@@ -31,6 +31,7 @@ import {
     Cell,
 } from "recharts";
 import Link from "next/link";
+import { MetricCard } from "@/components/ui/metric-card";
 import { cn } from "@/lib/utils";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
@@ -126,36 +127,40 @@ export default function OverviewPage() {
 
             {/* Hero Stats Cards */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <StatsCard
-                    title="Total Revenue"
-                    value={`$${stats?.totalInventoryValue.toLocaleString()}`}
-                    icon={DollarSign}
-                    trend="+12% from last month"
-                    trendUp={true}
-                    className="bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-background"
-                />
-                <StatsCard
-                    title="Total Products"
-                    value={stats?.totalProducts.toString() || "0"}
-                    icon={Package}
-                    trend="+5 new this week"
-                    trendUp={true}
-                />
-                <StatsCard
-                    title="Low Stock Alerts"
-                    value={stats?.lowStock.toString() || "0"}
-                    icon={AlertTriangle}
-                    trend="Requires attention"
-                    trendUp={false}
-                    iconColor="text-amber-600"
-                />
-                <StatsCard
-                    title="Categories"
-                    value={stats?.totalCategories.toString() || "0"}
-                    icon={FolderOpen}
-                    trend="Active categories"
-                    trendUp={true}
-                />
+                <motion.div variants={item}>
+                    <MetricCard
+                        title="Total Revenue"
+                        value={`$${stats?.totalInventoryValue.toLocaleString()}`}
+                        icon={DollarSign}
+                        trend={{ value: "+12% from last month", isPositive: true }}
+                        className="bg-primary/5 border-primary/20"
+                    />
+                </motion.div>
+                <motion.div variants={item}>
+                    <MetricCard
+                        title="Total Products"
+                        value={stats?.totalProducts.toString() || "0"}
+                        icon={Package}
+                        trend={{ value: "+5 new this week", isPositive: true }}
+                    />
+                </motion.div>
+                <motion.div variants={item}>
+                    <MetricCard
+                        title="Low Stock Alerts"
+                        value={stats?.lowStock.toString() || "0"}
+                        icon={AlertTriangle}
+                        trend={{ value: "Requires attention", isPositive: false }}
+                        iconClassName="text-warning"
+                    />
+                </motion.div>
+                <motion.div variants={item}>
+                    <MetricCard
+                        title="Categories"
+                        value={stats?.totalCategories.toString() || "0"}
+                        icon={FolderOpen}
+                        trend={{ value: "Active categories", isPositive: true }}
+                    />
+                </motion.div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
@@ -293,49 +298,7 @@ export default function OverviewPage() {
     );
 }
 
-function StatsCard({
-    title,
-    value,
-    icon: Icon,
-    trend,
-    trendUp,
-    className,
-    iconColor,
-}: {
-    title: string;
-    value: string;
-    icon: any;
-    trend: string;
-    trendUp: boolean;
-    className?: string;
-    iconColor?: string;
-}) {
-    return (
-        <motion.div variants={{ hidden: { y: 20, opacity: 0 }, show: { y: 0, opacity: 1 } }}>
-            <Card className={cn("overflow-hidden", className)}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                        {title}
-                    </CardTitle>
-                    <Icon className={cn("h-4 w-4 text-muted-foreground", iconColor)} />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{value}</div>
-                    <p className="text-xs text-muted-foreground flex items-center mt-1">
-                        {trendUp ? (
-                            <TrendingUp className="mr-1 h-3 w-3 text-green-500" />
-                        ) : (
-                            <Activity className="mr-1 h-3 w-3 text-muted-foreground" />
-                        )}
-                        <span className={trendUp ? "text-green-500" : "text-muted-foreground"}>
-                            {trend}
-                        </span>
-                    </p>
-                </CardContent>
-            </Card>
-        </motion.div>
-    );
-}
+
 
 function DashboardSkeleton() {
     return (
@@ -360,11 +323,11 @@ function DashboardSkeleton() {
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-7">
                 <div className="col-span-4">
-                    <Skeleton className="h-[400px] w-full rounded-xl" />
+                    <Skeleton className="h-[400px] w-full rounded-lg" />
                 </div>
                 <div className="col-span-3 space-y-4">
-                    <Skeleton className="h-[200px] w-full rounded-xl" />
-                    <Skeleton className="h-[180px] w-full rounded-xl" />
+                    <Skeleton className="h-[200px] w-full rounded-lg" />
+                    <Skeleton className="h-[180px] w-full rounded-lg" />
                 </div>
             </div>
         </div>

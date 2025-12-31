@@ -13,7 +13,7 @@ export function Topbar() {
     const title = pageTitles[pathname] || "Dashboard";
 
     return (
-        <header className="fixed left-64 right-0 top-0 z-30 h-16 border-b border-border bg-card">
+        <header className="fixed left-0 right-0 top-0 z-30 h-16 border-b border-border bg-card ml-64">
             <div className="flex h-full items-center px-6">
                 <h1 className="text-xl font-semibold text-card-foreground">{title}</h1>
             </div>
