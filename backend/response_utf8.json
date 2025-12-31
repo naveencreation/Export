@@ -1,0 +1,41 @@
+﻿
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"data":[{"id":4,"name"
+                    :"Status Test Product",
+                    "description":"","price
+                    ":50,"quantity":100,"im
+                    ageUrl":"","categoryId"
+                    :1,"sku":"TEST-STATUS-0
+                    01","hsCode":"","origin
+                    Country":"","weight":0,
+                    "length":0,"widt...
+RawContent        : HTTP/1.1 200 OK
+                    Vary: Origin
+                    Access-Control-Allow-Cr
+                    edentials: true
+                    Connection: keep-alive
+                    Keep-Alive: timeout=5
+                    Content-Length: 2131
+                    Content-Type: 
+                    application/json; 
+                    charset=utf-8
+                    Date: Wed, 31...
+Forms             : {}
+Headers           : {[Vary, Origin], [Acces
+                    s-Control-Allow-Credent
+                    ials, true], 
+                    [Connection, 
+                    keep-alive], 
+                    [Keep-Alive, 
+                    timeout=5]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClas
+                    s
+RawContentLength  : 2131
+
+
+

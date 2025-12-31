@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  quantity    Int
+  imageUrl    String?
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  sku         String   @unique @default(cuid()) // Default for migration, will be required
+  hsCode      String?
+  originCountry String?
+  weight      Float?
+  length      Float?
+  width       Float?
+  height      Float?
+  material    String?
+  status      String   @default("DRAFT")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
