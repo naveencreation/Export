@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { getProducts, getCategories, deleteProduct, bulkDeleteProducts, type Product, type Category } from "@/lib/api";
+import { getProducts, getCategories, deleteProduct, bulkDeleteProducts, BACKEND_URL, type Product, type Category } from "@/lib/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,7 +55,7 @@ const ITEMS_PER_PAGE = 10;
 function getImageUrl(url: string | null) {
     if (!url) return null;
     if (url.startsWith("http")) return url;
-    return `http://localhost:3001${url}`;
+    return `${BACKEND_URL}${url}`;
 }
 
 // Stock status calculation based on quantity

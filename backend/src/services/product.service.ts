@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { calculateStockStatus } from '../utils/stockStatus';
 
 const prisma = new PrismaClient();
@@ -57,31 +57,25 @@ export const getAllProducts = async (
         }),
     ]);
 
-    // Inventory Value: Calculate SUM(price * quantity) using aggregation
-    // Note: Prisma doesn't support computed field aggregation, so we use a workaround
-    // Fetch price and quantity sums separately, then multiply
-    const aggregateResult = await prisma.product.aggregate({
-        where,
-        _sum: {
-            price: true,
-            quantity: true,
-        },
-    });
+    // Inventory Value: Calculate SUM(price * quantity) using raw SQL for performance
+    // We need to replicate the WHERE clause for the raw query
+    let whereClause = 'WHERE 1=1';
+    const params: any[] = [];
 
-    // For accurate inventory value, we need to fetch minimal data to calculate price * quantity
-    // This is still more efficient than fetching all fields
-    const productsForValue = await prisma.product.findMany({
-        where,
-        select: {
-            price: true,
-            quantity: true,
-        },
-    });
+    if (categoryId) {
+        whereClause += ' AND categoryId = ?';
+        params.push(categoryId);
+    }
+    if (search) {
+        whereClause += ' AND name LIKE ?';
+        params.push(`%${search}%`);
+    }
 
-    const inventoryValue = productsForValue.reduce(
-        (acc, p) => acc + p.price * p.quantity,
-        0
+    const inventoryResult: any[] = await prisma.$queryRawUnsafe(
+        `SELECT SUM(price * quantity) as totalValue FROM Product ${whereClause}`,
+        ...params
     );
+    const inventoryValue = inventoryResult[0]?.totalValue || 0;
 
     // Fetch top category name if exists
     let topCategory = '—';
@@ -128,41 +122,32 @@ export const getProductById = async (id: number) => {
 };
 
 export const createProduct = async (data: any) => {
-    // Check SKU uniqueness
-    if (data.sku) {
-        const existing = await prisma.product.findFirst({
-            where: { sku: data.sku },
+    try {
+        return await prisma.product.create({
+            data,
+            include: { category: true },
         });
-        if (existing) {
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
             throw new Error(`SKU "${data.sku}" already exists.`);
         }
+        throw error;
     }
-
-    return await prisma.product.create({
-        data,
-        include: { category: true },
-    });
 };
 
 export const updateProduct = async (id: number, data: any) => {
-    // Check SKU uniqueness (exclude current product)
-    if (data.sku) {
-        const existing = await prisma.product.findFirst({
-            where: {
-                sku: data.sku,
-                id: { not: id },
-            },
+    try {
+        return await prisma.product.update({
+            where: { id },
+            data,
+            include: { category: true },
         });
-        if (existing) {
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
             throw new Error(`SKU "${data.sku}" already exists.`);
         }
+        throw error;
     }
-
-    return await prisma.product.update({
-        where: { id },
-        data,
-        include: { category: true },
-    });
 };
 
 export const deleteProduct = async (id: number) => {

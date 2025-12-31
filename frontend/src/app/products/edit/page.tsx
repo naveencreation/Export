@@ -41,6 +41,7 @@ import {
     createCategory,
     uploadImage,
     Category,
+    BACKEND_URL,
 } from "@/lib/api";
 import { ArrowLeft, Loader2, Box, Globe, Truck, ImagePlus, X, Plus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -131,8 +132,7 @@ function ProductEditContent() {
                         status: (product.status as any) || "DRAFT",
                     });
                     if (product.imageUrl) {
-                        const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:3001";
-                        setImagePreview(`${baseUrl}${product.imageUrl}`);
+                        setImagePreview(`${BACKEND_URL}${product.imageUrl}`);
                     }
                 }
             } catch (error) {

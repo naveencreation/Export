@@ -12,14 +12,11 @@ export const getDashboardStats = async () => {
         prisma.product.count({ where: { quantity: 0 } }),
     ]);
 
-    // Calculate Total Inventory Value
-    const allProducts = await prisma.product.findMany({
-        select: { price: true, quantity: true },
-    });
-    const totalInventoryValue = allProducts.reduce(
-        (acc, p) => acc + p.price * p.quantity,
-        0
-    );
+    // Calculate Total Inventory Value using raw SQL for performance
+    const inventoryResult: any[] = await prisma.$queryRaw`
+        SELECT SUM(price * quantity) as totalValue FROM Product
+    `;
+    const totalInventoryValue = inventoryResult[0]?.totalValue || 0;
 
     // Fetch Recent Activity (Last 5 products)
     const recentProducts = await prisma.product.findMany({
@@ -28,32 +25,34 @@ export const getDashboardStats = async () => {
         include: { category: true },
     });
 
-    // Calculate Top Categories
+    // Calculate Top Categories (Database level grouping and sorting)
     const productsByCategory = await prisma.product.groupBy({
         by: ['categoryId'],
         _count: {
             categoryId: true,
         },
+        orderBy: {
+            _count: {
+                categoryId: 'desc',
+            }
+        },
+        take: 5,
     });
 
-    // Fetch category names for the stats
-    const categoryStats = await Promise.all(
-        productsByCategory.map(async (item) => {
-            const category = await prisma.category.findUnique({
-                where: { id: item.categoryId },
-                select: { name: true },
-            });
-            return {
-                name: category?.name || 'Uncategorized',
-                value: item._count.categoryId,
-            };
-        })
-    );
+    // Efficiently fetch category names
+    const categoryIds = productsByCategory.map((item) => item.categoryId);
+    const categories = await prisma.category.findMany({
+        where: { id: { in: categoryIds } },
+        select: { id: true, name: true },
+    });
 
-    // Sort categories by count (descending) and take top 5
-    const topCategories = categoryStats
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 5);
+    const topCategories = productsByCategory.map((item) => {
+        const category = categories.find((c) => c.id === item.categoryId);
+        return {
+            name: category?.name || 'Uncategorized',
+            value: item._count.categoryId,
+        };
+    });
 
     return {
         totalProducts,
