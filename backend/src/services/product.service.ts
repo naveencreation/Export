@@ -3,13 +3,28 @@ import { calculateStockStatus } from '../utils/stockStatus';
 
 const prisma = new PrismaClient();
 
-export const getAllProducts = async (
-    categoryId?: number,
-    search?: string,
-    page: number = 1,
-    limit: number = 10
-) => {
-    const where: any = {};
+interface GetProductsOptions {
+    categoryId?: number;
+    search?: string;
+    page?: number;
+    limit?: number;
+    status?: string;
+    priceMin?: number;
+    priceMax?: number;
+}
+
+export const getAllProducts = async (options: GetProductsOptions = {}) => {
+    const {
+        categoryId,
+        search,
+        page = 1,
+        limit = 10,
+        status,
+        priceMin,
+        priceMax,
+    } = options;
+
+    const where: Prisma.ProductWhereInput = {};
 
     if (categoryId) {
         where.categoryId = categoryId;
@@ -17,6 +32,20 @@ export const getAllProducts = async (
 
     if (search) {
         where.name = { contains: search };
+    }
+
+    if (status) {
+        where.status = status;
+    }
+
+    if (priceMin !== undefined || priceMax !== undefined) {
+        where.price = {};
+        if (priceMin !== undefined) {
+            where.price.gte = priceMin;
+        }
+        if (priceMax !== undefined) {
+            where.price.lte = priceMax;
+        }
     }
 
     const skip = (page - 1) * limit;
@@ -70,6 +99,18 @@ export const getAllProducts = async (
         whereClause += ' AND name LIKE ?';
         params.push(`%${search}%`);
     }
+    if (status) {
+        whereClause += ' AND status = ?';
+        params.push(status);
+    }
+    if (priceMin !== undefined) {
+        whereClause += ' AND price >= ?';
+        params.push(priceMin);
+    }
+    if (priceMax !== undefined) {
+        whereClause += ' AND price <= ?';
+        params.push(priceMax);
+    }
 
     const inventoryResult: any[] = await prisma.$queryRawUnsafe(
         `SELECT SUM(price * quantity) as totalValue FROM Product ${whereClause}`,
@@ -106,6 +147,7 @@ export const getAllProducts = async (
         },
     };
 };
+
 
 export const getProductById = async (id: number) => {
     const product = await prisma.product.findUnique({

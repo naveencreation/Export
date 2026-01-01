@@ -103,12 +103,18 @@ export async function getProducts(params?: {
     limit?: number;
     search?: string;
     categoryId?: number;
+    status?: string;
+    priceMin?: number;
+    priceMax?: number;
 }): Promise<ProductsResponse> {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.set("page", params.page.toString());
     if (params?.limit) searchParams.set("limit", params.limit.toString());
     if (params?.search) searchParams.set("search", params.search);
     if (params?.categoryId) searchParams.set("categoryId", params.categoryId.toString());
+    if (params?.status) searchParams.set("status", params.status);
+    if (params?.priceMin !== undefined) searchParams.set("priceMin", params.priceMin.toString());
+    if (params?.priceMax !== undefined) searchParams.set("priceMax", params.priceMax.toString());
 
     const res = await fetch(`${API_BASE_URL}/products?${searchParams.toString()}`, {
         cache: "no-store",

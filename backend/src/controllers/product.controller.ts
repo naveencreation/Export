@@ -17,8 +17,11 @@ export const getAllProducts = async (
         const search = req.query.search ? String(req.query.search) : undefined;
         const page = req.query.page ? Number(req.query.page) : 1;
         const limit = req.query.limit ? Number(req.query.limit) : 10;
+        const status = req.query.status ? String(req.query.status) : undefined;
+        const priceMin = req.query.priceMin ? Number(req.query.priceMin) : undefined;
+        const priceMax = req.query.priceMax ? Number(req.query.priceMax) : undefined;
 
-        const result = await productService.getAllProducts(categoryId, search, page, limit);
+        const result = await productService.getAllProducts({ categoryId, search, page, limit, status, priceMin, priceMax });
         res.json(result);
     } catch (error) {
         next(error);
