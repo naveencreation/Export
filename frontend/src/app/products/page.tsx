@@ -2,15 +2,25 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { getProducts, getCategories, exportProducts, type Product, type Category } from "@/lib/api";
+import { getProducts, getCategories, deleteProduct, bulkDeleteProducts, exportProducts, type Product, type Category } from "@/lib/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MetricCard } from "@/components/ui/metric-card";
 import { DataTable } from "@/components/ui/data-table";
 import { ProductsToolbar } from "@/components/ui/products-toolbar";
-import { columns } from "./columns";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getColumns } from "./columns";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
     Plus,
     Download,
@@ -18,8 +28,10 @@ import {
     DollarSign,
     AlertTriangle,
     TrendingUp,
+    Trash2,
+    X,
 } from "lucide-react";
-import { PaginationState } from "@tanstack/react-table";
+import { PaginationState, RowSelectionState } from "@tanstack/react-table";
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -53,9 +65,10 @@ export default function ProductsPage() {
     // Filters (server-side)
     const [search, setSearch] = useState("");
     const [categoryId, setCategoryId] = useState("all");
-    const [status, setStatus] = useState<string | undefined>(undefined); // Controlled by Tabs
+    const [status, setStatus] = useState<string | undefined>(undefined);
     const [priceMin, setPriceMin] = useState("");
     const [priceMax, setPriceMax] = useState("");
+    const [stockStatus, setStockStatus] = useState("all");
 
     // Debounced search
     const debouncedSearch = useDebounce(search, 300);
@@ -67,6 +80,16 @@ export default function ProductsPage() {
         lowStock: 0,
         topCategory: "—",
     });
+
+    // ---- Delete State ----
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+    const [deleting, setDeleting] = useState(false);
+
+    // ---- Bulk Delete State ----
+    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+    const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+    const [bulkDeleting, setBulkDeleting] = useState(false);
 
     // ---- Fetch Data ----
     const fetchData = useCallback(async () => {
@@ -81,6 +104,7 @@ export default function ProductsPage() {
                     status: status,
                     priceMin: priceMin ? Number(priceMin) : undefined,
                     priceMax: priceMax ? Number(priceMax) : undefined,
+                    stockStatus: stockStatus !== "all" ? stockStatus : undefined,
                 }),
                 getCategories(),
             ]);
@@ -104,7 +128,7 @@ export default function ProductsPage() {
         } finally {
             setLoading(false);
         }
-    }, [pagination.pageIndex, pagination.pageSize, debouncedSearch, categoryId, status, priceMin, priceMax, toast]);
+    }, [pagination.pageIndex, pagination.pageSize, debouncedSearch, categoryId, status, priceMin, priceMax, stockStatus, toast]);
 
     useEffect(() => {
         fetchData();
@@ -113,7 +137,7 @@ export default function ProductsPage() {
     // Reset to page 1 when filters change
     useEffect(() => {
         setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-    }, [debouncedSearch, categoryId, status, priceMin, priceMax]);
+    }, [debouncedSearch, categoryId, status, priceMin, priceMax, stockStatus]);
 
     // ---- Handlers ----
     const handleExport = async () => {
@@ -129,8 +153,13 @@ export default function ProductsPage() {
     };
 
     const handleTabChange = (value: string) => {
+        // Reset stockStatus filter when tabs change (mutually exclusive)
+        setStockStatus("all");
         if (value === "all") {
             setStatus(undefined);
+        } else if (value === "outofstock") {
+            setStatus(undefined);
+            setStockStatus("out_of_stock");
         } else {
             setStatus(value.toUpperCase());
         }
@@ -141,9 +170,70 @@ export default function ProductsPage() {
         setCategoryId("all");
         setPriceMin("");
         setPriceMax("");
+        setStockStatus("all");
     };
 
-    const hasFilters = search !== "" || categoryId !== "all" || priceMin !== "" || priceMax !== "";
+    // Single Delete
+    const handleDeleteClick = (product: Product) => {
+        setProductToDelete(product);
+        setDeleteDialogOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!productToDelete) return;
+        setDeleting(true);
+        try {
+            await deleteProduct(productToDelete.id);
+            toast({ title: "Deleted", description: `"${productToDelete.name}" has been deleted.` });
+            setDeleteDialogOpen(false);
+            setProductToDelete(null);
+            fetchData();
+        } catch (err) {
+            toast({ variant: "destructive", title: "Error", description: "Failed to delete product." });
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    // Bulk Delete
+    const selectedProductIds = useMemo(() => {
+        return Object.keys(rowSelection)
+            .filter((key) => rowSelection[key])
+            .map((key) => products[parseInt(key)]?.id)
+            .filter(Boolean) as number[];
+    }, [rowSelection, products]);
+
+    const handleBulkDeleteClick = () => {
+        setBulkDeleteDialogOpen(true);
+    };
+
+    const handleBulkDeleteConfirm = async () => {
+        if (selectedProductIds.length === 0) return;
+        setBulkDeleting(true);
+        try {
+            await bulkDeleteProducts(selectedProductIds);
+            toast({ title: "Deleted", description: `${selectedProductIds.length} products deleted.` });
+            setBulkDeleteDialogOpen(false);
+            setRowSelection({});
+            fetchData();
+        } catch (err) {
+            toast({ variant: "destructive", title: "Error", description: "Failed to delete products." });
+        } finally {
+            setBulkDeleting(false);
+        }
+    };
+
+    const handleClearSelection = () => {
+        setRowSelection({});
+    };
+
+    const hasFilters = search !== "" || categoryId !== "all" || priceMin !== "" || priceMax !== "" || stockStatus !== "all";
+
+    // ---- Columns with Delete Action ----
+    const columns = useMemo(
+        () => getColumns({ onDelete: handleDeleteClick }),
+        []
+    );
 
     // ---- Toolbar Component ----
     const toolbar = useMemo(
@@ -158,11 +248,13 @@ export default function ProductsPage() {
                 priceMax={priceMax}
                 onPriceMinChange={setPriceMin}
                 onPriceMaxChange={setPriceMax}
+                stockStatus={stockStatus}
+                onStockStatusChange={setStockStatus}
                 onReset={handleResetFilters}
                 hasFilters={hasFilters}
             />
         ),
-        [search, categories, categoryId, priceMin, priceMax, hasFilters]
+        [search, categories, categoryId, priceMin, priceMax, stockStatus, hasFilters]
     );
 
     return (
@@ -239,7 +331,7 @@ export default function ProductsPage() {
             <Card className="border-border/40 shadow-sm bg-background/60 backdrop-blur-xl">
                 <CardHeader className="p-0" />
                 <CardContent className="p-6">
-                    {/* Status Tabs - Controls server-side filter */}
+                    {/* Status Tabs */}
                     <Tabs defaultValue="all" onValueChange={handleTabChange} className="w-full">
                         <div className="flex items-center justify-between mb-4">
                             <TabsList>
@@ -247,11 +339,12 @@ export default function ProductsPage() {
                                 <TabsTrigger value="active">Active</TabsTrigger>
                                 <TabsTrigger value="draft">Draft</TabsTrigger>
                                 <TabsTrigger value="archived">Archived</TabsTrigger>
+                                <TabsTrigger value="outofstock">Out of Stock</TabsTrigger>
                             </TabsList>
                         </div>
                     </Tabs>
 
-                    {/* Single DataTable - Data filtered server-side based on Tab selection */}
+                    {/* DataTable */}
                     <DataTable
                         columns={columns}
                         data={products}
@@ -260,10 +353,78 @@ export default function ProductsPage() {
                         onPaginationChange={setPagination}
                         toolbar={toolbar}
                         loading={loading}
+                        rowSelection={rowSelection}
+                        onRowSelectionChange={setRowSelection}
                     />
                 </CardContent>
             </Card>
+
+            {/* Floating Action Bar for Bulk Selection */}
+            {selectedProductIds.length > 0 && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+                    <div className="flex items-center gap-3 bg-background border border-border rounded-lg shadow-lg px-4 py-3">
+                        <span className="text-sm font-medium">
+                            {selectedProductIds.length} selected
+                        </span>
+                        <Button variant="ghost" size="sm" onClick={handleClearSelection}>
+                            <X className="h-4 w-4 mr-1" />
+                            Clear
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleBulkDeleteClick}
+                        >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {/* Single Delete Dialog */}
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete "{productToDelete?.name}"? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDeleteConfirm}
+                            disabled={deleting}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            {deleting ? "Deleting..." : "Delete"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Bulk Delete Dialog */}
+            <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete {selectedProductIds.length} Products</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete {selectedProductIds.length} products? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={bulkDeleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleBulkDeleteConfirm}
+                            disabled={bulkDeleting}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            {bulkDeleting ? "Deleting..." : "Delete All"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
-

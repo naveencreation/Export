@@ -20,8 +20,9 @@ export const getAllProducts = async (
         const status = req.query.status ? String(req.query.status) : undefined;
         const priceMin = req.query.priceMin ? Number(req.query.priceMin) : undefined;
         const priceMax = req.query.priceMax ? Number(req.query.priceMax) : undefined;
+        const stockStatus = req.query.stockStatus ? String(req.query.stockStatus) : undefined;
 
-        const result = await productService.getAllProducts({ categoryId, search, page, limit, status, priceMin, priceMax });
+        const result = await productService.getAllProducts({ categoryId, search, page, limit, status, priceMin, priceMax, stockStatus });
         res.json(result);
     } catch (error) {
         next(error);

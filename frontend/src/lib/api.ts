@@ -106,6 +106,7 @@ export async function getProducts(params?: {
     status?: string;
     priceMin?: number;
     priceMax?: number;
+    stockStatus?: string;
 }): Promise<ProductsResponse> {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.set("page", params.page.toString());
@@ -115,6 +116,7 @@ export async function getProducts(params?: {
     if (params?.status) searchParams.set("status", params.status);
     if (params?.priceMin !== undefined) searchParams.set("priceMin", params.priceMin.toString());
     if (params?.priceMax !== undefined) searchParams.set("priceMax", params.priceMax.toString());
+    if (params?.stockStatus) searchParams.set("stockStatus", params.stockStatus);
 
     const res = await fetch(`${API_BASE_URL}/products?${searchParams.toString()}`, {
         cache: "no-store",

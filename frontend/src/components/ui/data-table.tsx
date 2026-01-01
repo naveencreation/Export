@@ -16,6 +16,7 @@ import {
     useReactTable,
     PaginationState,
     OnChangeFn,
+    RowSelectionState,
 } from "@tanstack/react-table"
 
 import {
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/table"
 
 import { DataTablePagination } from "./data-table-pagination"
+import { DataTableViewOptions } from "./data-table-view-options"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -40,6 +42,9 @@ interface DataTableProps<TData, TValue> {
     toolbar?: React.ReactNode
     // Loading state
     loading?: boolean
+    // Row selection (controlled)
+    rowSelection?: RowSelectionState
+    onRowSelectionChange?: OnChangeFn<RowSelectionState>
 }
 
 export function DataTable<TData, TValue>({
@@ -50,14 +55,20 @@ export function DataTable<TData, TValue>({
     onPaginationChange,
     toolbar,
     loading,
+    rowSelection: controlledRowSelection,
+    onRowSelectionChange,
 }: DataTableProps<TData, TValue>) {
-    const [rowSelection, setRowSelection] = React.useState({})
+    const [internalRowSelection, setInternalRowSelection] = React.useState<RowSelectionState>({})
     const [columnVisibility, setColumnVisibility] =
         React.useState<VisibilityState>({})
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
         []
     )
     const [sorting, setSorting] = React.useState<SortingState>([])
+
+    // Use controlled or internal row selection
+    const rowSelection = controlledRowSelection ?? internalRowSelection
+    const setRowSelection = onRowSelectionChange ?? setInternalRowSelection
 
     // Determine if we're using server-side or client-side pagination
     const isServerSide = pageCount !== undefined && pagination !== undefined && onPaginationChange !== undefined
@@ -94,7 +105,10 @@ export function DataTable<TData, TValue>({
 
     return (
         <div className="space-y-4">
-            {toolbar}
+            <div className="flex items-center justify-between gap-2">
+                <div className="flex-1">{toolbar}</div>
+                <DataTableViewOptions table={table} />
+            </div>
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>

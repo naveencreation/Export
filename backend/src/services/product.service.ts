@@ -11,6 +11,7 @@ interface GetProductsOptions {
     status?: string;
     priceMin?: number;
     priceMax?: number;
+    stockStatus?: string; // 'in_stock', 'low_stock', 'out_of_stock'
 }
 
 export const getAllProducts = async (options: GetProductsOptions = {}) => {
@@ -22,6 +23,7 @@ export const getAllProducts = async (options: GetProductsOptions = {}) => {
         status,
         priceMin,
         priceMax,
+        stockStatus,
     } = options;
 
     const where: Prisma.ProductWhereInput = {};
@@ -45,6 +47,17 @@ export const getAllProducts = async (options: GetProductsOptions = {}) => {
         }
         if (priceMax !== undefined) {
             where.price.lte = priceMax;
+        }
+    }
+
+    // Stock status filter based on quantity ranges
+    if (stockStatus) {
+        if (stockStatus === 'out_of_stock') {
+            where.quantity = 0;
+        } else if (stockStatus === 'low_stock') {
+            where.quantity = { gt: 0, lte: 10 };
+        } else if (stockStatus === 'in_stock') {
+            where.quantity = { gt: 10 };
         }
     }
 
