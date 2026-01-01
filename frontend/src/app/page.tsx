@@ -278,22 +278,22 @@ export default function OverviewPage() {
                 </motion.div>
 
                 <motion.div variants={item} className="lg:col-span-3">
-                    <Card className="h-full border-0 shadow-sm">
-                        <CardHeader>
+                    <Card className="h-full border-0 shadow-sm flex flex-col">
+                        <CardHeader className="pb-2">
                             <CardTitle className="text-lg font-semibold">Inventory Status</CardTitle>
                             <CardDescription>Stock distribution overview</CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <div className="relative h-[220px] w-full">
+                        <CardContent className="flex-1 flex flex-col justify-between">
+                            <div className="relative h-[250px] w-full flex-1 min-h-[200px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
                                             data={inventoryStatusData}
                                             cx="50%"
                                             cy="50%"
-                                            innerRadius={65}
-                                            outerRadius={90}
-                                            paddingAngle={4}
+                                            innerRadius={70}
+                                            outerRadius={110}
+                                            paddingAngle={2}
                                             dataKey="value"
                                             strokeWidth={0}
                                         >
@@ -313,21 +313,43 @@ export default function OverviewPage() {
                                 {/* Center Label */}
                                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                     <div className="text-center">
-                                        <p className="text-3xl font-bold">{stats?.totalProducts || 0}</p>
-                                        <p className="text-xs text-muted-foreground">Total</p>
+                                        <p className="text-5xl font-bold tracking-tighter">
+                                            {stats?.totalProducts ? Math.round(((stats.inStock || 0) / stats.totalProducts) * 100) : 0}%
+                                        </p>
+                                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mt-1">In Stock</p>
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex justify-center gap-6 mt-4">
-                                {inventoryStatusData.map((item) => (
-                                    <div key={item.name} className="flex items-center gap-2">
-                                        <div
-                                            className="h-3 w-3 rounded-full"
-                                            style={{ backgroundColor: item.color }}
-                                        />
-                                        <span className="text-sm text-muted-foreground">{item.name}</span>
+
+                            {/* Footer Stats */}
+                            <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-border/50">
+                                <div className="flex flex-col items-center gap-1">
+                                    <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                        <CheckCircle className="h-4 w-4" />
                                     </div>
-                                ))}
+                                    <div className="text-center">
+                                        <p className="text-xs font-medium text-muted-foreground">In Stock</p>
+                                        <p className="text-base font-bold">{stats?.inStock || 0}</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-center gap-1">
+                                    <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                                        <AlertTriangle className="h-4 w-4" />
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-xs font-medium text-muted-foreground">Low Stock</p>
+                                        <p className="text-base font-bold">{stats?.lowStock || 0}</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-center gap-1">
+                                    <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                                        <XCircle className="h-4 w-4" />
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-xs font-medium text-muted-foreground">Out of Stock</p>
+                                        <p className="text-base font-bold">{stats?.outOfStock || 0}</p>
+                                    </div>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
