@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { LOW_STOCK_THRESHOLD } from '../config/constants';
 
 const prisma = new PrismaClient();
 
@@ -7,8 +8,8 @@ export const getDashboardStats = async () => {
     const totalCategories = await prisma.category.count();
 
     const [inStock, lowStock, outOfStock] = await Promise.all([
-        prisma.product.count({ where: { quantity: { gt: 10 } } }),
-        prisma.product.count({ where: { quantity: { gt: 0, lte: 10 } } }),
+        prisma.product.count({ where: { quantity: { gt: LOW_STOCK_THRESHOLD } } }),
+        prisma.product.count({ where: { quantity: { gt: 0, lte: LOW_STOCK_THRESHOLD } } }),
         prisma.product.count({ where: { quantity: 0 } }),
     ]);
 

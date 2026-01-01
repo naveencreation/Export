@@ -16,6 +16,10 @@ const config: Config = {
                     DEFAULT: "rgb(var(--card) / <alpha-value>)",
                     foreground: "rgb(var(--card-foreground) / <alpha-value>)",
                 },
+                popover: {
+                    DEFAULT: "rgb(var(--popover) / <alpha-value>)",
+                    foreground: "rgb(var(--popover-foreground) / <alpha-value>)",
+                },
                 primary: {
                     DEFAULT: "rgb(var(--primary) / <alpha-value>)",
                     foreground: "rgb(var(--primary-foreground) / <alpha-value>)",

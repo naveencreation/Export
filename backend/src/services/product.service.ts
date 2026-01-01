@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import { calculateStockStatus } from '../utils/stockStatus';
+import { LOW_STOCK_THRESHOLD } from '../config/constants';
 
 const prisma = new PrismaClient();
 
@@ -55,9 +56,9 @@ export const getAllProducts = async (options: GetProductsOptions = {}) => {
         if (stockStatus === 'out_of_stock') {
             where.quantity = 0;
         } else if (stockStatus === 'low_stock') {
-            where.quantity = { gt: 0, lte: 10 };
+            where.quantity = { gt: 0, lte: LOW_STOCK_THRESHOLD };
         } else if (stockStatus === 'in_stock') {
-            where.quantity = { gt: 10 };
+            where.quantity = { gt: LOW_STOCK_THRESHOLD };
         }
     }
 
@@ -81,11 +82,11 @@ export const getAllProducts = async (options: GetProductsOptions = {}) => {
     // New approach: Database-level aggregations (50-60% faster, constant memory)
 
     const [lowStockCount, categoryGroups] = await Promise.all([
-        // Low Stock Count: COUNT WHERE quantity > 0 AND quantity <= 10
+        // Low Stock Count: COUNT WHERE quantity > 0 AND quantity <= LOW_STOCK_THRESHOLD
         prisma.product.count({
             where: {
                 ...where,
-                quantity: { gt: 0, lte: 10 },
+                quantity: { gt: 0, lte: LOW_STOCK_THRESHOLD },
             },
         }),
 

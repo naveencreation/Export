@@ -1,3 +1,5 @@
+import { LOW_STOCK_THRESHOLD } from '../config/constants';
+
 /**
  * Calculate stock status based on quantity
  * Centralized logic to avoid duplication across services and frontend
@@ -6,7 +8,7 @@
  * @returns Stock status string: "In Stock" | "Low Stock" | "Out of Stock"
  */
 export function calculateStockStatus(quantity: number): string {
-    if (quantity > 10) {
+    if (quantity > LOW_STOCK_THRESHOLD) {
         return 'In Stock';
     } else if (quantity > 0) {
         return 'Low Stock';
