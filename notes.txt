@@ -1,1 +1,8 @@
 Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force
+
+
+
+backend : npx ts-node src/server.ts
+
+frontend : npm run dev
+

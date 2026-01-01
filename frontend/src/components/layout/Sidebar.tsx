@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
     { href: "/", label: "Overview", icon: LayoutDashboard },
     { href: "/products", label: "Products", icon: Package },
-    { href: "/products/edit", label: "Add / Edit Products", icon: PlusSquare },
+    { href: "/products/edit", label: "Add Product", icon: PlusSquare },
 ];
 
 export function Sidebar() {
