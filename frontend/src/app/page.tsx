@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { getDashboardStats, DashboardStats } from "@/lib/api";
 import {
     Package,
@@ -225,53 +226,97 @@ export default function OverviewPage() {
             <section className="grid grid-cols-1 gap-6 lg:grid-cols-7">
                 <motion.div variants={item} className="lg:col-span-4">
                     <Card className="h-full border-0 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-lg font-semibold">Top Categories</CardTitle>
-                            <CardDescription>
-                                Distribution of products across your top 5 categories.
-                            </CardDescription>
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <div>
+                                <CardTitle className="text-lg font-semibold">Top Categories</CardTitle>
+                                <CardDescription>
+                                    Performance overview
+                                </CardDescription>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-600">
+                                    <TrendingUp className="h-3 w-3" />
+                                    +4.2%
+                                </div>
+                                <Button variant="outline" size="sm" className="h-8 text-xs">
+                                    Export
+                                </Button>
+                            </div>
                         </CardHeader>
-                        <CardContent className="pl-2">
-                            <div className="h-[350px] w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={stats?.topCategories} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                                        <defs>
-                                            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                                        <XAxis
-                                            dataKey="name"
-                                            stroke="hsl(var(--muted-foreground))"
-                                            fontSize={12}
-                                            tickLine={false}
-                                            axisLine={false}
-                                        />
-                                        <YAxis
-                                            stroke="hsl(var(--muted-foreground))"
-                                            fontSize={12}
-                                            tickLine={false}
-                                            axisLine={false}
-                                            tickFormatter={(value) => `${value}`}
-                                        />
-                                        <Tooltip
-                                            cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
-                                            contentStyle={{
-                                                backgroundColor: "hsl(var(--card))",
-                                                borderColor: "hsl(var(--border))",
-                                                borderRadius: "var(--radius)",
-                                                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                                            }}
-                                        />
-                                        <Bar
-                                            dataKey="value"
-                                            fill="url(#barGradient)"
-                                            radius={[6, 6, 0, 0]}
-                                        />
-                                    </BarChart>
-                                </ResponsiveContainer>
+                        <CardContent>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {/* Left Column: Minimalist Bar Chart */}
+                                <div className="h-[300px] w-full flex flex-col">
+                                    <div className="mb-6">
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-4xl font-bold tracking-tight">
+                                                {stats?.totalProducts || 0}
+                                            </span>
+                                            <span className="text-sm font-medium text-muted-foreground">Total Products</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 w-full min-h-0">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={stats?.topCategories} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                                                <Tooltip
+                                                    cursor={{ fill: "hsl(var(--muted))", opacity: 0.2 }}
+                                                    contentStyle={{
+                                                        backgroundColor: "hsl(var(--card))",
+                                                        borderColor: "hsl(var(--border))",
+                                                        borderRadius: "var(--radius)",
+                                                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                                                    }}
+                                                />
+                                                <Bar
+                                                    dataKey="value"
+                                                    fill="#334155"
+                                                    radius={[4, 4, 4, 4]}
+                                                    barSize={40}
+                                                />
+                                                <XAxis
+                                                    dataKey="name"
+                                                    stroke="hsl(var(--muted-foreground))"
+                                                    fontSize={11}
+                                                    tickLine={false}
+                                                    axisLine={false}
+                                                    tickFormatter={(value) => value.substring(0, 3)}
+                                                    dy={10}
+                                                />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+
+                                {/* Right Column: Detailed Progress Bars */}
+                                <div className="flex flex-col justify-center space-y-8">
+                                    {stats?.topCategories.slice(0, 3).map((category, index) => (
+                                        <div key={category.name} className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={cn(
+                                                        "flex h-10 w-10 items-center justify-center rounded-lg border shadow-sm",
+                                                        "bg-card text-foreground"
+                                                    )}>
+                                                        {index === 0 ? <Package className="h-5 w-5 text-primary" /> :
+                                                            index === 1 ? <FolderOpen className="h-5 w-5 text-blue-500" /> :
+                                                                <Activity className="h-5 w-5 text-orange-500" />}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium leading-none">{category.name}</p>
+                                                        <p className="text-xs text-muted-foreground mt-1">
+                                                            {Math.round((category.value / (stats?.totalProducts || 1)) * 100)}% of total
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <span className="text-lg font-bold">{category.value}</span>
+                                            </div>
+                                            <Progress
+                                                value={(category.value / (stats?.totalProducts || 1)) * 100}
+                                                className="h-2 bg-muted"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
